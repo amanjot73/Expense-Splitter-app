@@ -1,118 +1,88 @@
-import streamlit as st
 import numpy as np
 import pandas as pd
 import networkx as nx
 import matplotlib.pyplot as plt
-from streamlit_option_menu import option_menu
 
-def viewNodes(solver, n, data):
-    edges = []
-    for i in range(n):
-        for j in range(n):
-            if(solver[i][j]>0.0):
-                edges.append((data[i]["name"], data[j]["name"]))
-    
+def draw_graph(transfers, people):
+    """Draws a directed graph of who pays whom."""
     G = nx.DiGraph()
-    G.add_edges_from(edges)
+    for payer, payee, amount in transfers:
+        if amount > 0:
+            G.add_edge(people[payer], people[payee], weight=amount)
     pos = nx.spring_layout(G)
     fig, ax = plt.subplots()
-    num_nodes=len(G.nodes())
-    base_node_size = 100
-    node_size = max(base_node_size // num_nodes, 100)
-    nx.draw(G, pos, with_labels=True, node_color='lightblue', node_size=node_size, font_size=8, ax=ax)
-    st.pyplot(fig)
+    nx.draw(G, pos, with_labels=True, node_color='lightblue', node_size=500, font_size=10, ax=ax)
+    nx.draw_networkx_edge_labels(
+        G, pos, edge_labels={(u, v): f"₹{d['weight']:.2f}" for u, v, d in G.edges(data=True)}, ax=ax
+    )
+    plt.show()
 
+def calculate_settlements(amounts):
+    n = len(amounts)
+    total = sum(amounts)
+    per_head = total / n if n > 0 else 0
+    # Calculate net balance for each person
+    net = [amt - per_head for amt in amounts]
+    # List of (index, net_balance)
+    creditors = [(i, x) for i, x in enumerate(net) if x > 0]
+    debtors = [(i, -x) for i, x in enumerate(net) if x < 0]
+    i, j = 0, 0
+    transfers = []
+    while i < len(debtors) and j < len(creditors):
+        debtor_idx, debt = debtors[i]
+        creditor_idx, credit = creditors[j]
+        pay = min(debt, credit)
+        transfers.append((debtor_idx, creditor_idx, pay))
+        debtors[i] = (debtor_idx, debt - pay)
+        creditors[j] = (creditor_idx, credit - pay)
+        if debtors[i][1] == 0:
+            i += 1
+        if creditors[j][1] == 0:
+            j += 1
+    return transfers
 
-def totalSpendings(data):
-    moneySpent=0.00
-    no=len(data)
-    for i in range(no):
-        moneySpent+=data[i]["amount"]
-    return moneySpent
-
-def viewData(data):
-    n=len(data)
-    for i in range(n):
-        st.write(data[i]["name"], data[i]["amount"])
-
-def perHeadExpenditure(data):
-    n=len(data)
-    moneySpent=totalSpendings(data)
-    return moneySpent/n
-
-def settle(data):
-    n=len(data)
-    perHead=perHeadExpenditure(data)
-    debt = [0.0 for i in range(n)]
-    for i in range(n):
-        debt[i] = perHead - data[i]["amount"]
+def main():
+    print("=== FairSplit CLI ===")
+    n = int(input("Enter number of people: "))
     
-    solver = [[1.00 for i in range(n)] for i in range(n)]
+    people = []
+    amounts = []
+    
     for i in range(n):
-        for j in range(n):
-            if(i==j):
-                solver[i][j]=0.00
-            elif(debt[i]<=0):
-                solver[i][j]=0.0
-    col1, col2=st.columns(2)
-    with col1:
-        st.header("Traditional Method")
-        viewNodes(solver, n, data)
-    for i in range (n):
-        for j in range (n):
-            if(solver[i][j]!=0.00):
-                if(debt[j]<0.00):
-                    solver[i][j]=min(debt[i], abs(debt[j]))
-                    debt[i]-=solver[i][j]
-                    debt[j]+=solver[i][j]
-                else:
-                    solver[i][j]=0.00
-    with col2:
-        st.header("Optimal Method")
-        viewNodes(solver, n, data)
+        name = input(f"Enter name of person {i+1}: ").strip()
+        if not name:
+            name = f"Person {i+1}"
+        while True:
+            try:
+                amount = float(input(f"Enter amount paid by {name}: "))
+                break
+            except ValueError:
+                print("Invalid amount, please enter a number.")
+        people.append(name)
+        amounts.append(amount)
     
-    st.subheader("To Settle the Amount: ")
-    col1, col2, col3 = st.columns(3)
-    with col1:
-        st.write(f"**Whom should pay?**")
-    with col2:
-        st.write(f"**To whom should pay?**")
-    with col3:
-        st.write(f"**Amount**")
-    
-    for i in range (n):
-        for j in range(n):
-            if(solver[i][j]!=0):
-                col1, col2, col3 = st.columns(3)
-                with col1:
-                    st.text(data[i]['name'])
-                with col2:
-                    st.text(data[j]['name'])
-                with col3:
-                    st.text(round(solver[i][j], 2))
-
-
-with st.sidebar:
-    st.title("Expense Splitter")
-    st.write("#")
-    st.write("Enter the number of people (>1)")
-    n=st.number_input("",min_value=0, step=1)
-    st.markdown('😺 See Project Repository on [GitHub](https://github.com/iamsahilkansal/expense-splitter-app)')
-    st.markdown('👨‍💻 Made by [**Sahil Kansal**](https://www.linkedin.com/in/iamsahilkansal/)')
-
-name = []
-amount=[]
-data=[]
-for i in range(n):
-    col1, col2 = st.columns(2)
-    with col1:
-        tempName = st.text_input(f"Enter the name for person {i+1}")
-    with col2:
-        tempAmount =st.number_input(f"Enter the amount for person {i+1}",step=1.,format="%.2f")
-    data.append({"name":tempName, "amount":tempAmount})
-if(n>1):
-    if(st.button("Settle Now")):
-        if(n==1):
-            st.write("No Need for settlement")
+    if n > 1:
+        total = sum(amounts)
+        per_head = total / n
+        print(f"\nTotal Spendings: ₹{total:.2f}")
+        print(f"Per Head Expenditure: ₹{per_head:.2f}\n")
+        
+        transfers = calculate_settlements(amounts)
+        
+        if transfers:
+            print("### Settlements ###")
+            df = pd.DataFrame([{
+                "Who Pays": people[payer],
+                "To Whom": people[payee],
+                "Amount": f"₹{amount:.2f}"
+            } for payer, payee, amount in transfers if amount > 0])
+            print(df.to_string(index=False))
         else:
-            settle(data)
+            print("No settlements needed. Everyone has paid their share.")
+        
+        draw_graph(transfers, people)
+    else:
+        print("Not enough people to calculate settlements.")
+
+if __name__ == "__main__":
+    main()

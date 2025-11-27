@@ -1,91 +1,127 @@
-# expense-splitter-app
+# **FairSplit – Expense Splitter CLI App**
 
-This project is a web application that helps split group expenses efficiently by minimizing the number of transactions required. The app takes into account the amounts spent by each person and settles the debts in the minimum possible transactions using Graph Theory and Dynamic Programming.
+FairSplit is a **Command-Line based Expense Settlement Tool** that helps groups split expenses fairly. It calculates who owes whom and minimizes the number of payments required. The application also visualizes settlements using **Graph Theory**.
 
-## Features
+---
 
-- **Efficient Transaction Reduction:** Reduces the number of transactions required to settle expenses within a group, often far fewer than the traditional method.
-- **Dynamic Programming & Graph Algorithm:** Utilizes advanced algorithms to minimize intermediary transactions, directly calculating the optimal settlement path.
-- **User-Friendly Interface:** Simple interface for users to input expenses and instantly view the results.
-- **Multi-person Group Support:** Handles expenses for any number of people in a group.
+## ✨ Features
 
-## Tech Stack
+* **Fair & Automated Settlement Calculation**
+* **Minimum number of payments**
+* **Graph visualization** of who pays whom
+* Works for any group size
+* Simple & interactive CLI interface
 
-- **Frontend:** Streamlit (Python-based web framework)
-- **Backend Logic:** Python, Graphs, Dynamic Programming
-- **Deployment:** Python
+---
 
-## How It Works
+## 🧠 How It Works
 
-1. Input the number of people and the amount each person has spent.
-2. The app processes the expenses using dynamic programming and graphs to minimize transactions.
-3. The minimum number of transactions required to settle the debts will be displayed.
+* Calculates **net balance** for every person
+* Matches creditors vs. debtors efficiently
+* Uses **Greedy Optimization** for settlement
+* Draws **directed graph** using NetworkX + Matplotlib
 
-## Getting Started
+---
 
-### Prerequisites
+## 🛠️ Tech Stack
 
-- **Python 3.x** installed on your system.
-- **Streamlit** library for building the web interface.
+| Component           | Technology Used              |
+| ------------------- | ---------------------------- |
+| Logic               | Python                       |
+| Data Handling       | Pandas                       |
+| Graph Visualization | NetworkX, Matplotlib         |
+| UI Type             | Command Line Interface (CLI) |
 
-### Installation
+---
 
-1. Clone this repository:
+## 📦 Installation
 
-   ```bash
-   git clone https://github.com/iamsahilkansal/expense-splitter-app.git
-   ```
-2. Navigate to the project directory:
+### Required Software
 
-   ```bash
-   cd expense-splitter-app
-   ```
-3. Install the required dependencies:
+* Python **3.x**
 
-   ```bash
-   pip install -r requirements.txt
-   ```
-4. Run the Streamlit app:
+### Required Python Libraries
 
-   ```bash
-   streamlit run app.py
-   ```
+Install dependencies using:
 
-### Usage
+```bash
+pip install numpy pandas matplotlib networkx
+```
 
-- After running the app, you will see a web interface in your browser.
-- Input the number of people and their respective expenses.
-- The app will calculate and display the minimum number of transactions to settle the expenses.
+or
 
-## Example
+```bash
+pip install -r requirements.txt
+```
 
-For example, consider the following group with 5 people and their respective expenses:
+---
 
-- A spent ₹500
-- B spent ₹1000
-- C spent ₹700
-- D spent ₹300
-- E spent ₹600
+## ▶️ Run the Application
 
-Instead of each person paying others directly, the app will calculate the fewest possible transactions, optimizing settlement paths.
+```bash
+git clone https://github.com/amanjot73/Expense-Splitter-app.git
+cd Expense-Splitter-app
+python app.py
+```
 
-In a typical case, this could reduce the number of transactions from 20 to 4 by eliminating unnecessary intermediary transfers (e.g., A -> B -> C is directly reduced to A -> C).
+---
 
-## Project Structure
+## 📝 Example Input
 
-expense-splitter-app
-├── app.py # Main Streamlit app an Core logic for minimizing transactions
-├── README.md # Project documentation
-├── requirements.txt # Project dependencies
-└── assets/ # Any static assets (images, etc.)
+```
+Enter number of people: 3
+Enter name of person 1: Aman
+Enter amount paid by Aman: 1200
+Enter name of person 2: Sahil
+Enter amount paid by Sahil: 300
+Enter name of person 3: Amit
+Enter amount paid by Amit: 0
+```
 
-## Contributing
+### Output Includes:
 
-Feel free to fork this repository and contribute by submitting a pull request. Any improvements in algorithm efficiency, features, or UI are highly appreciated!
+✔ Total spend
+✔ Per person share
+✔ Who should pay whom
+✔ Graph showing payment flow
 
-## Contact
+---
 
-If you have any questions or feedback, feel free to reach out:
+## 📊 Graph Example
 
-- **Email:** kansalsahil51@gmail.com
-- **GitHub:** [iamsahilkansal](https://github.com/iamsahilkansal)
+A directed graph is generated like:
+
+➡ **Amit → Aman : ₹400**
+➡ **Sahil → Aman : ₹400**
+
+Each arrow shows: **Debtor → Creditor → Amount**
+
+---
+
+## 📂 Project Structure
+
+```
+Expense-Splitter-app/
+│── app.py              # Main CLI application
+│── README.md           # Documentation
+│── requirements.txt    # Required dependencies
+
+```
+
+---
+
+## 🚀 Future Enhancements
+
+* GUI version using Streamlit
+* Export settlement summary as PDF
+* Support multiple bills & recurring groups
+* Improved visualization styling
+
+---
+
+## ✍️ Author
+
+**Amanjot Singh**
+GitHub: [@amanjot73](https://github.com/amanjot73)
+
+---
